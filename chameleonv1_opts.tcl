@@ -1,3 +1,15 @@
+# Device settings
+
+set_global_assignment -name FAMILY "Cyclone III"
+set_global_assignment -name DEVICE EP3C25E144C8
+set_global_assignment -name TOP_LEVEL_ENTITY chameleon_toplevel
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION "9.0 SP1"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "20:32:22  APRIL 24, 2011"
+set_global_assignment -name LAST_QUARTUS_VERSION "13.0 SP1"
+set_global_assignment -name USE_GENERATED_PHYSICAL_CONSTRAINTS OFF -section_id eda_blast_fpga
+set_global_assignment -name DEVICE_FILTER_PIN_COUNT 144
+set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 8
+
 # Core / process settings
 
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
@@ -37,6 +49,4 @@ set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
 set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name AUTO_SHIFT_REGISTER_RECOGNITION OFF
-set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to mux
-set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to mux_d
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -1,3 +1,12 @@
+# Device settings
+
+set_global_assignment -name FAMILY "Cyclone 10 LP"
+set_global_assignment -name DEVICE 10CL025YU256C8G
+set_global_assignment -name NOMINAL_CORE_SUPPLY_VOLTAGE 1.2V
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name GENERATE_RBF_FILE ON
+set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Lite Edition"
+
 # Core / Process settings
 
 set_global_assignment -name CYCLONEIII_CONFIGURATION_SCHEME "PASSIVE SERIAL"
@@ -19,16 +28,10 @@ set_global_assignment -name OPTIMIZE_POWER_DURING_SYNTHESIS "EXTRA EFFORT"
 set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 4
 set_global_assignment -name ROUTER_EFFORT_MULTIPLIER 4
 
-set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
-set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
-set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "NO HEAT SINK WITH STILL AIR"
-set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name PHYSICAL_SYNTHESIS_EFFORT EXTRA
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 
-set_global_assignment -name TOP_LEVEL_ENTITY chameleonv2_top

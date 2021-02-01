@@ -2,18 +2,21 @@
 --
 -- Turbo Chameleon
 --
--- Toplevel entity for Turbo Chameleon 64
+-- Toplevel file for Turbo Chameleon 64
 --
+-- Some signal names changed by AMR to match V2,
+-- making it easier to maintain multi-platform cores.
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.ALL;
 
 library work;
+use work.Toplevel_Config.ALL;
 
 -- -----------------------------------------------------------------------
 
-entity chameleon_toplevel is
+entity chameleon64_top is
 	generic (
 		resetCycles: integer := 131071
 	);
@@ -48,28 +51,27 @@ entity chameleon_toplevel is
 		usart_cts : in std_logic;
 
 -- SDRam
-		sd_clk : out std_logic;
-		sd_data : inout std_logic_vector(15 downto 0);
-		sd_addr : out std_logic_vector(12 downto 0);
-		sd_we_n : out std_logic;
-		sd_ras_n : out std_logic;
-		sd_cas_n : out std_logic;
-		sd_ba_0 : out std_logic;
-		sd_ba_1 : out std_logic;
-		sd_ldqm : out std_logic;
-		sd_udqm : out std_logic;
+		ram_clk : out std_logic;
+		ram_data : inout std_logic_vector(15 downto 0);
+		ram_addr : out std_logic_vector(12 downto 0);
+		ram_we_n : out std_logic;
+		ram_ras_n : out std_logic;
+		ram_cas_n : out std_logic;
+		ram_ba_0 : out std_logic;
+		ram_ba_1 : out std_logic;
+		ram_ldqm : out std_logic;
+		ram_udqm : out std_logic;
 
 -- Video
 		red : out unsigned(4 downto 0);
 		grn : out unsigned(4 downto 0);
 		blu : out unsigned(4 downto 0);
-		nHSync : buffer std_logic;
-		nVSync : buffer std_logic;
+		hsync_n : out std_logic;
+		vsync_n : out std_logic;
 
 -- Audio
-		sigmaL : out std_logic;
-		sigmaR : out std_logic
+		sigma_l : out std_logic;
+		sigma_r : out std_logic
 	);
 end entity;
-
 

@@ -2,7 +2,6 @@
 
 set_global_assignment -name FAMILY "Cyclone III"
 set_global_assignment -name DEVICE EP3C25E144C8
-set_global_assignment -name TOP_LEVEL_ENTITY chameleon_toplevel
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION "9.0 SP1"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "20:32:22  APRIL 24, 2011"
 set_global_assignment -name LAST_QUARTUS_VERSION "13.0 SP1"

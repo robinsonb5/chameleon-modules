@@ -100,7 +100,7 @@ entity chameleon_cdtv_remote is
 		key_vol_dn : out std_logic;
 		joystick_a : out unsigned(5 downto 0);
 		joystick_b : out unsigned(5 downto 0);
-
+		currentport : out std_logic;
 		debug_code : out unsigned(11 downto 0)
 	);
 end entity;
@@ -284,6 +284,7 @@ begin
 			end case;
 
 			if (current_code(11) = '0') and (current_code(1 downto 0) = "00") then
+				currentport <= '0';
 				joystick_a <= not ((current_code(6) and not jumpmode) & current_code(7)  -- Buttons
 					& current_code(2) & current_code(3) & current_code(4)  -- Directions
 						& (current_code(5) or (current_code(6) and jumpmode)));
@@ -291,6 +292,7 @@ begin
 				jumpmode <= jumpmode xor ((current_code(6) xor prevb_a) and prevb_b);
 			end if;
 			if (current_code(11) = '1') and (current_code(1 downto 0) = "00") then
+				currentport <= '1';
 				joystick_b <= not ((current_code(6) and not jumpmode) & current_code(7)  -- Buttons
 					& current_code(2) & current_code(3) & current_code(4)  -- Directions
 						& (current_code(5) or (current_code(6) and jumpmode)));

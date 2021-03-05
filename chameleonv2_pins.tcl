@@ -131,11 +131,11 @@ set_location_assignment PIN_L7 -to usart_rx
 set_location_assignment PIN_N12 -to usart_tx
 set_location_assignment PIN_N3 -to vsync_n
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ba_in
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[2]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[3]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blu[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blu[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blu[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blu[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blu[4]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk50m
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clock_ior
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clock_iow
@@ -150,7 +150,7 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to grn[1]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to grn[2]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to grn[3]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to grn[4]
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hsync
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hsync_n
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to iec_atn_out
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to iec_clk_out
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to iec_dat_out
@@ -261,7 +261,7 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to usart_cts
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to usart_rts
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to usart_rx
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to usart_tx
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to vsync
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to vsync_n
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to ram_clk
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to ram_a[12]
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to ram_a[11]

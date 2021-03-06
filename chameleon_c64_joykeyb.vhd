@@ -90,7 +90,7 @@ architecture rtl of chameleon_c64_joykeyb is
 		SET_COL, READ_ROW, STORE_ROW, SET_NOCOL,
 		READ_JOY_EXTRA1, READ_JOY_EXTRA2, READ_JOY_EXTRA3,
 		READ_JOY1, STORE_JOY1, STORE_JOY2,
-		READ_JOY34, STORE_JOY34);
+		READ_JOY34, STORE_JOY34, NMI_ACK);
 	signal state : state_t := INIT_RESET;
 	signal req_reg : std_logic := '0';
 	signal joy34_flag : std_logic := '0';
@@ -103,12 +103,14 @@ architecture rtl of chameleon_c64_joykeyb is
 	signal joystick3_reg : unsigned(joystick3'range) := (others => '1');
 	signal joystick4_reg : unsigned(joystick4'range) := (others => '1');
 	signal keys_reg : unsigned(63 downto 0) := (others => '1');
+	signal keys_reg_d : unsigned(63 downto 0) := (others => '1');
+	signal keysafe : std_logic; -- AMR - anti key-glitch measures.
 begin
 	joystick1 <= joystick1_reg;
 	joystick2 <= joystick2_reg;
 	joystick3 <= joystick3_reg;
 	joystick4 <= joystick4_reg;
-	keys <= keys_reg;
+--	keys <= keys_reg; -- AMR, do this conditionally based on joystick activity.
 	req <= req_reg;
 
 	process(clk)
@@ -259,6 +261,17 @@ begin
 					if enable_4player then
 						state <= READ_JOY34;
 					end if;
+
+					-- AMR - anti keyboard glitch
+					if joystick1_reg="1111111" then
+						if keysafe='1' then
+							keys <= keys_reg or keys_reg_d;
+							keys_reg_d <= keys_reg;
+						end if;
+						keysafe<='1';	-- It's OK to update keys next round.
+					else
+						keysafe<='0';	-- Prevent updating of keys until one round after joystick is released.
+					end if;
 				when READ_JOY34 =>
 					-- read user port for joystick 3 or 4
 					we <= '0';
@@ -280,6 +293,12 @@ begin
 					joy34_flag <= not joy34_flag;
 					req_reg <= not req_reg;
 					state <= SET_COL;
+				when NMI_ACK =>
+					-- read user port for joystick 3 or 4
+					we <= '0';
+					a <= X"DD0D";
+					req_reg <= not req_reg;
+					state <= SET_COL;
 				end case;
 			end if;
 			if reset = '1' then
@@ -291,6 +310,7 @@ begin
 				joystick3_reg <= (others => '1');
 				joystick4_reg <= (others => '1');
 				keys_reg <= (others => '1');
+				keys <= (others => '1');
 			end if;
 			if not enable_4player then
 				joystick3_reg <= (others => '1');

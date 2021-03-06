@@ -93,9 +93,13 @@ architecture rtl of chameleon_docking_station is
 	signal shift_reg : unsigned(shift_reg_bits-1 downto 0);
 	signal bit_cnt : unsigned(7 downto 0) := (others => '0');
 	signal once : std_logic := '0';
+	signal bit_stb : std_logic;
+	signal keystart : unsigned(7 downto 0);
 
 	signal docking_version_reg : std_logic := '0';
 	signal key_reg : unsigned(63 downto 0) := (others => '1');
+	signal key_reg_d : unsigned(63 downto 0) := (others => '1');
+	signal keysafe_counter : unsigned(2 downto 0);
 	signal restore_n_reg : std_logic := '1';
 	signal joystick1_reg : unsigned(6 downto 0) := (others => '0');
 	signal joystick2_reg : unsigned(6 downto 0) := (others => '0');
@@ -116,7 +120,7 @@ begin
 	joystick2 <= joystick2_reg;
 	joystick3 <= joystick3_reg;
 	joystick4 <= joystick4_reg;
-	keys <= key_reg;
+	keys <= key_reg or key_reg_d;
 	restore_key_n <= restore_n_reg;
 	amiga_reset_n <= amiga_reset_n_reg;
 	amiga_trigger <= amiga_trigger_reg;
@@ -140,9 +144,11 @@ begin
 	process(clk) is
 	begin
 		if rising_edge(clk) then
+			bit_stb<='0';
 			if (dotclock_n_reg = '0') and (dotclock_n_dly = '1') then
 				shift_reg <= (not rom_lh_n_reg) & shift_reg(shift_reg'high downto 1);
 				bit_cnt <= bit_cnt + 1;
+				bit_stb <= '1';	-- AMR - strobe when the shift counter changes
 			end if;
 			if (io_ef_n_reg = '1') and (bit_cnt = out_of_sync_pos) then
 				-- Out of sync detection.
@@ -177,7 +183,7 @@ begin
 	process(clk) is
 	begin
 		if rising_edge(clk) then
-			if bit_cnt = shift_reg_bits then
+			if bit_stb='1' and bit_cnt = shift_reg_bits then
 				-- Docking-station and protocol version information
 				docking_version_reg <= shift_reg(3);
 
@@ -198,19 +204,47 @@ begin
 					shift_reg(88) & shift_reg(89) & shift_reg(90) & shift_reg(91);
 				restore_n_reg <= shift_reg(1);
 
-				-- Map shifted bits to C64 keyboard
-				if (shift_reg(87 downto 80) = X"FF") and (shift_reg(103 downto 96) = X"FF") then
-					for row in 0 to 7 loop
-						for col in 0 to 7 loop
-							-- uC scans column wise.
-							key_reg(row*8 + col) <= shift_reg(16 + col*8 + row);
+				-- AMR - keyboard handling is complicated. The Docking Station suffers from the
+				-- same interference from joystick port1 as a real C64, with one crucial difference:
+				-- the docking station's sampling seems to be asynchronous with this module's
+				-- transferring of data, so it's possible for us to see more than one consecutive 
+				-- key state report that has been compromised by the beginning of a joystick event,
+				-- before the joystick event itself is visible.  This means the traditional
+				-- method of ignoring key data when the joystick is active won't be sufficient.
+				
+				-- To solve this, we reduce the maximum rate at which we latch the keyboard data.
+				-- We only latch when the joystick is idle.  We store the old value, and 
+				-- logical or it with the new value.  Transients caused by edges of joystick
+				-- events are thus filtered out.
+				
+				-- AMR - port 2 shouldn't interfere with the keyboard I think?  But harmless to filter it out too.
+				if (shift_reg(87 downto 80) = X"FF")
+					and (shift_reg(103 downto 96) = X"FF")
+						and shift_reg(79 downto 72) = keystart then
+					-- AMR - Reduce reporting rate of C64 keyboard, so that transients
+					-- cause by the joystick can be better filtered out.
+					keysafe_counter<=keysafe_counter+1;
+					if keysafe_counter=0 then
+						key_reg_d <= key_reg;
+						-- Map shifted bits to C64 keyboard
+						for row in 0 to 7 loop
+							for col in 0 to 7 loop
+								-- uC scans column wise.
+								key_reg(row*8 + col) <= shift_reg(16 + col*8 + row);
+							end loop;
 						end loop;
-					end loop;
+					end if;
 				else
+					-- AMR - restart the counter any time the joystick is active or the first byte
+					-- of keyboard data changes
+					keysafe_counter<=(others=>'0');
+					keysafe_counter(0)<='1';
 					-- Prevent conflict between keyboard and joystick.
-					-- Relase all keyboard keys while joystick button(s) are pressed.
-					key_reg <= (others => '1');
+					-- Release all keyboard keys while joystick button(s) are pressed.
+					-- AMR - better to avoid creating phanton key releases / re-presses
+					--					key_reg <= (others => '1');
 				end if;
+				keystart<=shift_reg(79 downto 72);
 
 				-- Amiga keyboard
 				amiga_reset_n_reg <= shift_reg(2);

@@ -24,7 +24,13 @@ set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name OPTIMIZE_HOLD_TIMING "ALL PATHS"
 set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
 set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
-set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE BALANCED
+
+if {[info exists optimizeforspeed]} {
+	set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE SPEED
+} else {
+	set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE BALANCED
+}
+
 set_global_assignment -name GENERATE_RBF_FILE ON
 set_global_assignment -name FORCE_CONFIGURATION_VCCIO ON
 set_global_assignment -name FMAX_REQUIREMENT "108 MHz"

@@ -20,9 +20,16 @@ set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULA
 set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS PROGRAMMING PIN"
 
 set_global_assignment -name ADD_PASS_THROUGH_LOGIC_TO_INFERRED_RAMS OFF
-set_global_assignment -name OPTIMIZATION_MODE BALANCED
+
+if {[info exists optimizeforspeed]} {
+	set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
+	set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE SPEED
+} else {
+	set_global_assignment -name OPTIMIZATION_MODE BALANCED
+	set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE BALANCED
+}
+
 set_global_assignment -name PRE_MAPPING_RESYNTHESIS ON
-set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE SPEED
 set_global_assignment -name ADV_NETLIST_OPT_SYNTH_WYSIWYG_REMAP ON
 set_global_assignment -name OPTIMIZE_POWER_DURING_SYNTHESIS "EXTRA EFFORT"
 set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 4

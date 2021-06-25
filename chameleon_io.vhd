@@ -226,6 +226,7 @@ entity chameleon_io is
 -- SPI raw signals (enable_raw_spi must be set to true)
 		spi_raw_clk : in std_logic := '1';
 		spi_raw_mosi : in std_logic := '1';
+		spi_raw_req : in std_logic := '0';
 		spi_raw_ack : out std_logic;  -- Added by AMR
 
 -- LEDs
@@ -795,7 +796,6 @@ begin
 	process(clk_mux)
 	begin
 		if rising_edge(clk_mux) then
-			spi_raw_ack <= '0';
 			midi_txd_reg <= midi_txd;
 
 			if mux_clk_reg = '1' then
@@ -841,7 +841,7 @@ begin
 						mux_d_reg(2) <= mmc_cs_n;
 						mux_d_reg(3) <= to_usb_rx;
 						mux_reg <= X"C";
-						spi_raw_ack <= '1';
+						spi_raw_ack <= spi_raw_req;
 					end if;
 				when MUX_MMC1L | MUX_MMC2L | MUX_MMC3L
 				   | MUX_MMC4L | MUX_MMC5L | MUX_MMC6L | MUX_MMC7L =>
@@ -866,7 +866,7 @@ begin
 						mux_d_reg(2) <= mmc_cs_n;
 						mux_d_reg(3) <= to_usb_rx;
 						mux_reg <= X"C";
-						spi_raw_ack <= '1';
+						spi_raw_ack <= spi_raw_req;
 					end if;
 
 				when MUX_MMC0H | MUX_MMC1H | MUX_MMC2H | MUX_MMC3H
@@ -899,7 +899,7 @@ begin
 						mux_d_reg(2) <= mmc_cs_n;
 						mux_d_reg(3) <= to_usb_rx;
 						mux_reg <= X"C";
-						spi_raw_ack <= '1';
+						spi_raw_ack <= spi_raw_req;
 					end if;
 				when MUX_NMIIRQ1 | MUX_NMIIRQ2=>
 					mux_d_reg <= "110" & (not reset);
@@ -950,7 +950,7 @@ begin
 						mux_d_reg(2) <= mmc_cs_n;
 						mux_d_reg(3) <= to_usb_rx;
 						mux_reg <= X"C";
-						spi_raw_ack <= '1';
+						spi_raw_ack <= spi_raw_req;
 					end if;
 				when MUX_WAIT1 =>
 					-- Continue BUSVIC output at end of phi2=0, so we sample BA a few times.
@@ -975,7 +975,7 @@ begin
 							mux_d_reg(2) <= mmc_cs_n;
 							mux_d_reg(3) <= to_usb_rx;
 							mux_reg <= X"C";
-						spi_raw_ack <= '1';
+							spi_raw_ack <= spi_raw_req;
 						end if;
 					end if;
 --

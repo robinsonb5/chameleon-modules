@@ -17,7 +17,11 @@ entity chameleon_mergeinputs is
 		reset_n : in std_logic;
 		ena_1mhz : in std_logic;
 		ir_data : in std_logic;
+		
 		button_menu_n : in std_logic;
+		button_freeze_n : in std_logic;
+		button_reset_n : in std_logic;
+		
 		c64_joy1 : in unsigned(6 downto 0);
 		c64_joy2 : in unsigned(6 downto 0);
 		c64_joy3 : in unsigned(6 downto 0);
@@ -29,7 +33,12 @@ entity chameleon_mergeinputs is
 		joy2_out : out unsigned(joybits-1 downto 0);
 		joy3_out : out unsigned(joybits-1 downto 0);
 		joy4_out : out unsigned(joybits-1 downto 0);
-		menu_out_n : out std_logic
+		menu_out_n : out std_logic;
+		
+		usart_cts : in std_logic;
+		usart_rxd : in std_logic;
+		usart_txd : out std_logic;
+		usart_clk : in std_logic
 	);
 end entity;
 
@@ -59,6 +68,13 @@ signal porta_start : std_logic;
 signal porta_select : std_logic;
 signal portb_start : std_logic;
 signal portb_select : std_logic;
+
+-- Reconfiguration - triggered by pressing middle and right buttons simultaneously
+signal reconfig_s2 : std_logic;
+signal reconfig_s : std_logic;
+signal reconfig_d : std_logic;
+signal reconfig_stable : std_logic;
+signal reconfig_trigger : std_logic;
 
 begin
 
@@ -154,5 +170,40 @@ begin
 	end process;
 
 	menu_out_n<=button_menu_n and c64_menu and not cdtv_power;
+	
+process(clk) begin
+	if rising_edge(clk) then
+		reconfig_s2 <= button_freeze_n or button_reset_n;
+		reconfig_s <= reconfig_s2;
+		reconfig_d <= reconfig_s;
+		reconfig_trigger <= '0';
+
+		-- Glitch filter
+		
+		if ena_1mhz='1' then
+			if reconfig_stable='1' and reconfig_d='0' then
+				reconfig_trigger<='1';
+			end if;
+			reconfig_stable<='1';
+		end if;
+
+		if reconfig_d/=reconfig_s then
+			reconfig_stable<='0';
+		end if;
+	end if;
+end process;
+
+usbmcu : entity work.chameleon_reconfig
+port map (
+	clk => clk,
+
+	reconfig => reconfig_trigger,
+	reconfig_slot => X"0",
+
+	serial_clk => usart_clk,
+	serial_rxd => usart_rxd,
+	serial_txd => usart_txd,
+	serial_cts_n => usart_cts
+);
 	
 end architecture;

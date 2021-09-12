@@ -21,7 +21,7 @@ set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS PROGRAMMING
 
 set_global_assignment -name ADD_PASS_THROUGH_LOGIC_TO_INFERRED_RAMS OFF
 
-if {[info exists optimizeforspeed]} {
+if {[info exists optimizeforspeed] && ($optimizeforspeed==1)} {
 	set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
 	set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE SPEED
 } else {

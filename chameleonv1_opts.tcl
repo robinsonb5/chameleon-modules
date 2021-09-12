@@ -25,7 +25,7 @@ set_global_assignment -name OPTIMIZE_HOLD_TIMING "ALL PATHS"
 set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
 set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
 
-if {[info exists optimizeforspeed]} {
+if {[info exists optimizeforspeed] && ($optimizeforspeed==1)} {
 	set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE SPEED
 } else {
 	set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE BALANCED

@@ -70,13 +70,47 @@ signal portb_start : std_logic;
 signal portb_select : std_logic;
 
 -- Reconfiguration - triggered by pressing middle and right buttons simultaneously
-signal reconfig_s2 : std_logic;
-signal reconfig_s : std_logic;
-signal reconfig_d : std_logic;
-signal reconfig_stable : std_logic;
-signal reconfig_trigger : std_logic;
+signal reconfig_trigger : std_logic := '0';
+
+signal debounce_ctr : unsigned(15 downto 0);
+signal debouncer1 : std_logic_vector(3 downto 0);
+signal debouncer2 : std_logic_vector(3 downto 0);
+signal debouncer3 : std_logic_vector(3 downto 0);
+
+signal db_menu_n : std_logic := '1';
+signal db_freeze_n : std_logic := '1';
+signal db_reset_n : std_logic := '1';
 
 begin
+
+	-- Debounce buttons, and assert reconfig_trigger if reset and freeze are pressed together.
+	-- Doesn't have a reset, since the reset button is being debounced!
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if ena_1mhz='1' then
+				debouncer1<=debouncer1(2 downto 0) & button_menu_n;
+				debouncer2<=debouncer2(2 downto 0) & button_freeze_n;
+				debouncer3<=debouncer3(2 downto 0) & button_reset_n;
+				if (debouncer1(3) xor debouncer1(2))='1'
+					or (debouncer2(3) xor debouncer2(2))='1'
+					or (debouncer3(3) xor debouncer3(2))='1' then
+						debounce_ctr<=(others=>'0');
+						reconfig_trigger<='0';
+				elsif debounce_ctr(debounce_ctr'high)='1' then
+					db_menu_n<=debouncer1(3);
+					db_freeze_n<=debouncer2(3);
+					db_reset_n<=debouncer3(3);
+					
+					if db_freeze_n='0' and db_reset_n='0' then
+						reconfig_trigger<='1';
+					end if;
+				else
+					debounce_ctr<=debounce_ctr+1;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Synchronise IR signal
 	process (clk)
@@ -169,29 +203,7 @@ begin
 		joy4_out(button4)<='1';
 	end process;
 
-	menu_out_n<=button_menu_n and c64_menu and not cdtv_power;
-	
-process(clk) begin
-	if rising_edge(clk) then
-		reconfig_s2 <= button_freeze_n or button_reset_n;
-		reconfig_s <= reconfig_s2;
-		reconfig_d <= reconfig_s;
-		reconfig_trigger <= '0';
-
-		-- Glitch filter
-		
-		if ena_1mhz='1' then
-			if reconfig_stable='1' and reconfig_d='0' then
-				reconfig_trigger<='1';
-			end if;
-			reconfig_stable<='1';
-		end if;
-
-		if reconfig_d/=reconfig_s then
-			reconfig_stable<='0';
-		end if;
-	end if;
-end process;
+	menu_out_n<=db_menu_n and c64_menu and not cdtv_power;
 
 usbmcu : entity work.chameleon_reconfig
 port map (

@@ -28,6 +28,9 @@ entity chameleon_mergeinputs is
 		c64_joy4 : in unsigned(6 downto 0);
 		c64_keys : in unsigned(63 downto 0);
 		c64_joykey_ena : in std_logic;
+		
+		c64_restore_in : in std_logic := '1'; -- C64 restore key tends to be a very narrow momentary pulse
+		c64_restore_out : out std_logic; -- So we convert it to something wider and more likely to be noticed...
 
 		joy1_out : out unsigned(joybits-1 downto 0);
 		joy2_out : out unsigned(joybits-1 downto 0);
@@ -69,10 +72,16 @@ signal porta_select : std_logic;
 signal portb_start : std_logic;
 signal portb_select : std_logic;
 
+-- Menu button - debouncing
+signal menu_s2 : std_logic;
+signal menu_s : std_logic;
+signal menu_d : std_logic;
+signal menu_stable : std_logic;
+
 -- Reconfiguration - triggered by pressing middle and right buttons simultaneously
 signal reconfig_trigger : std_logic := '0';
 
-signal debounce_ctr : unsigned(15 downto 0);
+signal debounce_ctr : unsigned(5 downto 0);
 signal debouncer1 : std_logic_vector(3 downto 0);
 signal debouncer2 : std_logic_vector(3 downto 0);
 signal debouncer3 : std_logic_vector(3 downto 0);
@@ -81,22 +90,33 @@ signal db_menu_n : std_logic := '1';
 signal db_freeze_n : std_logic := '1';
 signal db_reset_n : std_logic := '1';
 
+-- Widening of restore key pulses
+signal ena_1khz : std_logic;
+signal restore_key_ctr : unsigned(8 downto 0);
+
 begin
+
+	my1Khz : entity work.chameleon_1khz
+	port map (
+		clk => clk,
+		ena_1mhz => ena_1mhz,
+		ena_1khz => ena_1khz
+	);
 
 	-- Debounce buttons, and assert reconfig_trigger if reset and freeze are pressed together.
 	-- Doesn't have a reset, since the reset button is being debounced!
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			if ena_1mhz='1' then
+			reconfig_trigger<='0';
+			if ena_1khz='1' then
 				debouncer1<=debouncer1(2 downto 0) & button_menu_n;
 				debouncer2<=debouncer2(2 downto 0) & button_freeze_n;
 				debouncer3<=debouncer3(2 downto 0) & button_reset_n;
 				if (debouncer1(3) xor debouncer1(2))='1'
-					or (debouncer2(3) xor debouncer2(2))='1'
-					or (debouncer3(3) xor debouncer3(2))='1' then
-						debounce_ctr<=(others=>'0');
-						reconfig_trigger<='0';
+						or (debouncer2(3) xor debouncer2(2))='1'
+						or (debouncer3(3) xor debouncer3(2))='1' then
+					debounce_ctr<=(others=>'0');
 				elsif debounce_ctr(debounce_ctr'high)='1' then
 					db_menu_n<=debouncer1(3);
 					db_freeze_n<=debouncer2(3);
@@ -205,17 +225,33 @@ begin
 
 	menu_out_n<=db_menu_n and c64_menu and not cdtv_power;
 
-usbmcu : entity work.chameleon_reconfig
-port map (
-	clk => clk,
+	usbmcu : entity work.chameleon_reconfig
+	port map (
+		clk => clk,
 
-	reconfig => reconfig_trigger,
-	reconfig_slot => X"0",
+		reconfig => reconfig_trigger,
+		reconfig_slot => X"0",
 
-	serial_clk => usart_clk,
-	serial_rxd => usart_rxd,
-	serial_txd => usart_txd,
-	serial_cts_n => usart_cts
-);
+		serial_clk => usart_clk,
+		serial_rxd => usart_rxd,
+		serial_txd => usart_txd,
+		serial_cts_n => usart_cts
+	);
+
+
+	-- Restore key: widen the pulse to make it more likely to be picked up by the guest core...
+
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if ena_1khz='1' and restore_key_ctr(8)='0' then
+				restore_key_ctr<=restore_key_ctr+1;
+			else
+				restore_key_ctr(8)<=restore_key_ctr(8) and c64_restore_in;
+			end if;
+		end if;
+	end process;
+		
+	c64_restore_out <= restore_key_ctr(8);
 	
 end architecture;

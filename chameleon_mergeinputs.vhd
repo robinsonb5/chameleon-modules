@@ -37,6 +37,7 @@ entity chameleon_mergeinputs is
 		joy3_out : out unsigned(joybits-1 downto 0);
 		joy4_out : out unsigned(joybits-1 downto 0);
 		menu_out_n : out std_logic;
+		freeze_out_n : out std_logic;
 		
 		usart_cts : in std_logic;
 		usart_rxd : in std_logic;
@@ -224,6 +225,7 @@ begin
 	end process;
 
 	menu_out_n<=db_menu_n and c64_menu and not cdtv_power;
+	freeze_out_n<=db_freeze_n;
 
 	usbmcu : entity work.chameleon_reconfig
 	port map (

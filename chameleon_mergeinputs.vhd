@@ -32,6 +32,8 @@ entity chameleon_mergeinputs is
 		c64_restore_in : in std_logic := '1'; -- C64 restore key tends to be a very narrow momentary pulse
 		c64_restore_out : out std_logic; -- So we convert it to something wider and more likely to be noticed...
 
+		keypad : out std_logic_vector(11 downto 0);
+		
 		joy1_out : out unsigned(joybits-1 downto 0);
 		joy2_out : out unsigned(joybits-1 downto 0);
 		joy3_out : out unsigned(joybits-1 downto 0);
@@ -154,7 +156,19 @@ begin
 		joystick_b => cdtv_joyb,
 		key_vol_up => cdtv_volup,
 		key_vol_dn => cdtv_voldown,
-		currentport => cdtv_port
+		currentport => cdtv_port,
+		key_0 => keypad(0),
+		key_1 => keypad(1),
+		key_2 => keypad(2),
+		key_3 => keypad(3),
+		key_4 => keypad(4),
+		key_5 => keypad(5),
+		key_6 => keypad(6),
+		key_7 => keypad(7),
+		key_8 => keypad(8),
+		key_9 => keypad(9),
+		key_enter => keypad(10),
+		key_escape => keypad(11)		
 	);
 
 	keys_safe <= '1' when c64_joy1="1111111" else '0';

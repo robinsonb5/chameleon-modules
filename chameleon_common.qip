@@ -10,4 +10,5 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) chameleon_
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) chameleon_phi_clock_e.vhd]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) chameleon_reconfig.vhd]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) gen_usart.vhd]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) chameleon_c64keys_pkg.vhd]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) chameleon_mergeinputs.vhd]

@@ -171,8 +171,8 @@ begin
 					-- cursorleftright without right shift, or l;
 					c64_right1 <= not c64_joykey_ena or ((c64_keys(c64key_cursorleftright) or not c64_keys(c64key_rightshift)) and c64_keys(c64key_l));
 
-					c64_a1 <= not c64_joykey_ena or c64_keys(c64key_n);
-					c64_b1 <= not c64_joykey_ena or c64_keys(c64key_b);
+					c64_a1 <= not c64_joykey_ena or (c64_keys(c64key_n) and c64_keys(c64key_period));
+					c64_b1 <= not c64_joykey_ena or (c64_keys(c64key_b) and c64_keys(c64key_slash));
 					c64_start1 <= not c64_joykey_ena or c64_keys(c64key_return);
 					c64_select1 <= not c64_joykey_ena or c64_keys(c64key_equals);					
 
@@ -182,8 +182,8 @@ begin
 					c64_left2 <= not c64_joykey_ena or c64_keys(c64key_a);
 					c64_right2 <= not c64_joykey_ena or c64_keys(c64key_d);
 
-					c64_a2 <= not c64_joykey_ena or c64_keys(c64key_leftshift);
-					c64_b2 <= not c64_joykey_ena or c64_keys(c64key_commodore);
+					c64_a2 <= not c64_joykey_ena or (c64_keys(c64key_leftshift) and c64_keys(c64key_c));
+					c64_b2 <= not c64_joykey_ena or (c64_keys(c64key_commodore) and c64_keys(c64key_v));
 					c64_start2 <= not c64_joykey_ena or c64_keys(c64key_control);
 					c64_select2 <= not c64_joykey_ena or c64_keys(c64key_stop);
 

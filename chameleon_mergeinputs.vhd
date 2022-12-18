@@ -13,7 +13,11 @@ entity chameleon_mergeinputs is
 		button1 : integer :=4;
 		button2 : integer :=5;
 		button3 : integer :=6;
-		button4 : integer :=7
+		button4 : integer :=7;
+		c64key_start1 : integer := c64key_return;
+		c64key_select1 : integer := c64key_equals;
+		c64key_start2 : integer := c64key_control;
+		c64key_select2 : integer := c64key_stop
 	);
 	port (
 		clk : in std_logic; -- 100 MHz input clock
@@ -173,8 +177,8 @@ begin
 
 					c64_a1 <= not c64_joykey_ena or (c64_keys(c64key_n) and c64_keys(c64key_period));
 					c64_b1 <= not c64_joykey_ena or (c64_keys(c64key_b) and c64_keys(c64key_slash));
-					c64_start1 <= not c64_joykey_ena or c64_keys(c64key_return);
-					c64_select1 <= not c64_joykey_ena or c64_keys(c64key_equals);					
+					c64_start1 <= not c64_joykey_ena or c64_keys(c64key_start1);
+					c64_select1 <= not c64_joykey_ena or c64_keys(c64key_select1);					
 
 					-- Game port 2 emulation
 					c64_up2 <= not c64_joykey_ena or c64_keys(c64key_w);
@@ -184,8 +188,8 @@ begin
 
 					c64_a2 <= not c64_joykey_ena or (c64_keys(c64key_leftshift) and c64_keys(c64key_c));
 					c64_b2 <= not c64_joykey_ena or (c64_keys(c64key_commodore) and c64_keys(c64key_v));
-					c64_start2 <= not c64_joykey_ena or c64_keys(c64key_control);
-					c64_select2 <= not c64_joykey_ena or c64_keys(c64key_stop);
+					c64_start2 <= not c64_joykey_ena or c64_keys(c64key_start2);
+					c64_select2 <= not c64_joykey_ena or c64_keys(c64key_select2);
 
 					c64_menu <= not c64_joykey_ena or c64_keys(c64key_leftarrow); -- Left arrow;
 				end if;

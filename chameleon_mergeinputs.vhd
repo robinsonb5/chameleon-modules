@@ -48,6 +48,8 @@ entity chameleon_mergeinputs is
 		menu_out_n : out std_logic;
 		freeze_out_n : out std_logic;
 		
+		coin_start : out std_logic_vector(7 downto 0);
+		
 		usart_cts : in std_logic;
 		usart_rxd : in std_logic;
 		usart_txd : out std_logic;
@@ -59,8 +61,11 @@ architecture rtl of chameleon_mergeinputs is
 
 	signal ena_1khz : std_logic;
 	signal merged_menu : std_logic;
+	signal keypad_i : std_logic_vector(11 downto 0);
 
 begin
+
+	keypad <= keypad_i;
 
 	my1Khz : entity work.chameleon_1khz
 	port map (
@@ -80,6 +85,7 @@ begin
 		signal cdtv_play : std_logic;
 		signal cdtv_volup : std_logic;
 		signal cdtv_voldown : std_logic;
+		signal cdtv_coin_start : std_logic_vector(7 downto 0);
 
 		-- c64 keyboard-related signals
 		signal keys_safe : std_logic;
@@ -102,6 +108,8 @@ begin
 		signal c64_down2 : std_logic :='1';
 		signal c64_emu1 : unsigned(5 downto 0);
 		signal c64_emu2 : unsigned(5 downto 0);
+
+		signal c64_coin_start : std_logic_vector(7 downto 0);
 
 		-- Merged signals for joypad buttons 
 		signal porta_a : std_logic;
@@ -135,18 +143,18 @@ begin
 			key_vol_up => cdtv_volup,
 			key_vol_dn => cdtv_voldown,
 			currentport => cdtv_port,
-			key_0 => keypad(0),
-			key_1 => keypad(1),
-			key_2 => keypad(2),
-			key_3 => keypad(3),
-			key_4 => keypad(4),
-			key_5 => keypad(5),
-			key_6 => keypad(6),
-			key_7 => keypad(7),
-			key_8 => keypad(8),
-			key_9 => keypad(9),
-			key_enter => keypad(10),
-			key_escape => keypad(11)		
+			key_0 => keypad_i(0),
+			key_1 => keypad_i(1),
+			key_2 => keypad_i(2),
+			key_3 => keypad_i(3),
+			key_4 => keypad_i(4),
+			key_5 => keypad_i(5),
+			key_6 => keypad_i(6),
+			key_7 => keypad_i(7),
+			key_8 => keypad_i(8),
+			key_9 => keypad_i(9),
+			key_enter => keypad_i(10),
+			key_escape => keypad_i(11)		
 		);
 
 
@@ -192,10 +200,24 @@ begin
 					c64_select2 <= not c64_joykey_ena or c64_keys(c64key_select2);
 
 					c64_menu <= not c64_joykey_ena or c64_keys(c64key_leftarrow); -- Left arrow;
+					
+					c64_coin_start(0) <= not c64_joykey_ena or c64_keys(c64key_1);
+					c64_coin_start(1) <= not c64_joykey_ena or c64_keys(c64key_2);
+					c64_coin_start(2) <= not c64_joykey_ena or c64_keys(c64key_3);
+					c64_coin_start(3) <= not c64_joykey_ena or c64_keys(c64key_4);
+					c64_coin_start(4) <= not c64_joykey_ena or c64_keys(c64key_5);
+					c64_coin_start(5) <= not c64_joykey_ena or c64_keys(c64key_6);
+					c64_coin_start(6) <= not c64_joykey_ena or c64_keys(c64key_7);
+					c64_coin_start(7) <= not c64_joykey_ena or c64_keys(c64key_8);
+
 				end if;
 			end if;
 		end process;
 
+		cdtv_coin_start <= not keypad_i(8 downto 1);
+		
+		coin_start <= c64_coin_start and cdtv_coin_start;
+		
 		c64_emu1 <= c64_b1 & c64_a1 & c64_right1 & c64_left1 & c64_down1 & c64_up1;
 		c64_emu2 <= c64_b2 & c64_a2 & c64_right2 & c64_left2 & c64_down2 & c64_up2;
 

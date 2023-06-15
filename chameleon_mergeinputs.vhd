@@ -14,6 +14,8 @@ entity chameleon_mergeinputs is
 		button2 : integer :=5;
 		button3 : integer :=6;
 		button4 : integer :=7;
+		button5 : integer :=6;
+		button6 : integer :=7;
 		c64key_start1 : integer := c64key_return;
 		c64key_select1 : integer := c64key_equals;
 		c64key_start2 : integer := c64key_control;
@@ -58,7 +60,7 @@ entity chameleon_mergeinputs is
 end entity;
 
 architecture rtl of chameleon_mergeinputs is
-
+	constant joybits_internal : integer := 10;
 	signal ena_1khz : std_logic;
 	signal merged_menu : std_logic;
 	signal keypad_i : std_logic_vector(11 downto 0);
@@ -85,6 +87,7 @@ begin
 		signal cdtv_play : std_logic;
 		signal cdtv_volup : std_logic;
 		signal cdtv_voldown : std_logic;
+		signal cdtv_ffwd : std_logic;
 		signal cdtv_coin_start : std_logic_vector(7 downto 0);
 
 		-- c64 keyboard-related signals
@@ -92,10 +95,14 @@ begin
 		signal c64_menu : std_logic :='1';
 		signal c64_a1 : std_logic :='1';
 		signal c64_b1 : std_logic :='1';
+		signal c64_c1 : std_logic :='1';
+		signal c64_d1 : std_logic :='1';
 		signal c64_start1 : std_logic :='1';
 		signal c64_select1 :std_logic :='1';
 		signal c64_a2 : std_logic :='1';
 		signal c64_b2 : std_logic :='1';
+		signal c64_c2 : std_logic :='1';
+		signal c64_d2 : std_logic :='1';
 		signal c64_start2 : std_logic :='1';
 		signal c64_select2 : std_logic :='1';
 		signal c64_left1 : std_logic :='1';
@@ -114,12 +121,22 @@ begin
 		-- Merged signals for joypad buttons 
 		signal porta_a : std_logic;
 		signal porta_b : std_logic;
+		signal porta_c : std_logic;
+		signal porta_d : std_logic;
 		signal porta_start : std_logic;
 		signal porta_select : std_logic;
 		signal portb_a : std_logic;
 		signal portb_b : std_logic;
+		signal portb_c : std_logic;
+		signal portb_d : std_logic;
 		signal portb_start : std_logic;
 		signal portb_select : std_logic;
+
+		signal joy1 : unsigned(joybits_internal-1 downto 0);
+		signal joy2 : unsigned(joybits_internal-1 downto 0);
+		signal joy3 : unsigned(joybits_internal-1 downto 0);
+		signal joy4 : unsigned(joybits_internal-1 downto 0);
+
 	begin
 		-- Synchronise IR signal
 		process (clk)
@@ -142,6 +159,7 @@ begin
 			joystick_b => cdtv_joyb,
 			key_vol_up => cdtv_volup,
 			key_vol_dn => cdtv_voldown,
+			key_ff => cdtv_ffwd,
 			currentport => cdtv_port,
 			key_0 => keypad_i(0),
 			key_1 => keypad_i(1),
@@ -185,6 +203,8 @@ begin
 
 					c64_a1 <= not c64_joykey_ena or (c64_keys(c64key_n) and c64_keys(c64key_period));
 					c64_b1 <= not c64_joykey_ena or (c64_keys(c64key_b) and c64_keys(c64key_slash));
+					c64_c1 <= not c64_joykey_ena or c64_keys(c64key_comma);
+					c64_d1 <= not c64_joykey_ena or c64_keys(c64key_m);
 					c64_start1 <= not c64_joykey_ena or c64_keys(c64key_start1);
 					c64_select1 <= not c64_joykey_ena or c64_keys(c64key_select1);					
 
@@ -196,6 +216,8 @@ begin
 
 					c64_a2 <= not c64_joykey_ena or (c64_keys(c64key_leftshift) and c64_keys(c64key_c));
 					c64_b2 <= not c64_joykey_ena or (c64_keys(c64key_commodore) and c64_keys(c64key_v));
+					c64_c2 <= not c64_joykey_ena or c64_keys(c64key_z);
+					c64_d2 <= not c64_joykey_ena or c64_keys(c64key_x);
 					c64_start2 <= not c64_joykey_ena or c64_keys(c64key_start2);
 					c64_select2 <= not c64_joykey_ena or c64_keys(c64key_select2);
 
@@ -224,13 +246,17 @@ begin
 		merged_menu <= c64_menu and (not cdtv_power);
 
 		-- 3rd and 4th buttons, active low
-		porta_a <= cdtv_joya(4) and c64_joy1(4) and c64_emu1(4);
-		porta_b <= cdtv_joya(5) and c64_joy1(5) and c64_emu1(5);
+		porta_a <= cdtv_joya(4) and c64_joy1(4) and c64_a1;
+		porta_b <= cdtv_joya(5) and c64_joy1(5) and c64_b1;
+		porta_c <= (cdtv_port or not cdtv_voldown) and c64_c1;
+		porta_d <= (cdtv_port or not cdtv_ffwd) and c64_d1;
 		porta_start <= (cdtv_port or not cdtv_play) and c64_start1;
 		porta_select <= ((cdtv_port or not cdtv_volup) and c64_select1) and c64_joy1(6);
 
-		portb_a <= cdtv_joyb(4) and c64_joy2(4) and c64_emu2(4);
-		portb_b <= cdtv_joyb(5) and c64_joy2(5) and c64_emu2(5);
+		portb_a <= cdtv_joyb(4) and c64_joy2(4) and c64_a2;
+		portb_b <= cdtv_joyb(5) and c64_joy2(5) and c64_b2;
+		portb_c <= (not cdtv_port or not cdtv_voldown) and c64_c2;
+		portb_d <= (not cdtv_port or not cdtv_ffwd) and c64_b2;
 		portb_start <= (not cdtv_port or not cdtv_play) and c64_start2;
 		portb_select <= ((not cdtv_port or not cdtv_volup) and c64_select2) and c64_joy2(6);
 
@@ -238,40 +264,58 @@ begin
 		process(c64_emu1,c64_emu2,c64_joy1,c64_joy2,c64_joy3,c64_joy4,cdtv_joya,cdtv_joyb,
 					porta_select,portb_select,porta_start,portb_start,porta_a,porta_b,portb_a,portb_b)
 		begin
-			joy1_out<=(others=>'1');
-			joy2_out<=(others=>'1');
-			joy3_out<=(others=>'1');
-			joy4_out<=(others=>'1');
+			joy1<=(others=>'1');
+			joy2<=(others=>'1');
+			joy3<=(others=>'1');
+			joy4<=(others=>'1');
 
-			joy1_out(3 downto 0)<=c64_joy1(3 downto 0) and cdtv_joya(3 downto 0) and c64_emu1(3 downto 0);
-			joy2_out(3 downto 0)<=c64_joy2(3 downto 0) and cdtv_joyb(3 downto 0) and c64_emu2(3 downto 0);
-			joy3_out(3 downto 0)<=c64_joy3(3 downto 0);
-			joy4_out(3 downto 0)<=c64_joy4(3 downto 0);
+			joy1(3 downto 0)<=c64_joy1(3 downto 0) and cdtv_joya(3 downto 0) and c64_emu1(3 downto 0);
+			joy2(3 downto 0)<=c64_joy2(3 downto 0) and cdtv_joyb(3 downto 0) and c64_emu2(3 downto 0);
+			joy3(3 downto 0)<=c64_joy3(3 downto 0);
+			joy4(3 downto 0)<=c64_joy4(3 downto 0);
 
 			-- First button
-			joy1_out(button1)<=porta_a and c64_joy1(4);
-			joy2_out(button1)<=portb_a and c64_joy2(4);
-			joy3_out(button1)<=c64_joy3(4);
-			joy4_out(button1)<=c64_joy4(4);
+			joy1(button1)<=porta_a and c64_joy1(4);
+			joy2(button1)<=portb_a and c64_joy2(4);
+			joy3(button1)<=c64_joy3(4);
+			joy4(button1)<=c64_joy4(4);
 
 			-- Second button
-			joy1_out(button2)<=porta_b and c64_joy1(5);
-			joy2_out(button2)<=portb_b and c64_joy2(5);
-			joy3_out(button2)<=c64_joy3(5);
-			joy4_out(button2)<=c64_joy4(5);
+			joy1(button2)<=porta_b and c64_joy1(5);
+			joy2(button2)<=portb_b and c64_joy2(5);
+			joy3(button2)<=c64_joy3(5);
+			joy4(button2)<=c64_joy4(5);
 
 			-- Third button
-			joy1_out(button3)<=porta_select and c64_joy1(6);
-			joy2_out(button3)<=portb_select and c64_joy2(6);
-			joy3_out(button3)<=c64_joy3(6);
-			joy4_out(button3)<=c64_joy4(6);
+			joy1(button3)<=porta_select and c64_joy1(6);
+			joy2(button3)<=portb_select and c64_joy2(6);
+			joy3(button3)<=c64_joy3(6);
+			joy4(button3)<=c64_joy4(6);
 
 			-- Fourth button
-			joy1_out(button4)<=porta_start;
-			joy2_out(button4)<=portb_start;
-			joy3_out(button4)<='1';
-			joy4_out(button4)<='1';
+			joy1(button4)<=porta_start;
+			joy2(button4)<=portb_start;
+			joy3(button4)<='1';
+			joy4(button4)<='1';
+
+			-- Fifth button
+			joy1(button5)<=porta_c;
+			joy2(button5)<=portb_c;
+			joy3(button5)<='1';
+			joy4(button5)<='1';
+
+			-- Sixth button
+			joy1(button6)<=porta_d;
+			joy2(button6)<=portb_d;
+			joy3(button6)<='1';
+			joy4(button6)<='1';
+
 		end process;
+
+		joy1_out <= joy1(joybits-1 downto 0);
+		joy2_out <= joy2(joybits-1 downto 0);
+		joy3_out <= joy3(joybits-1 downto 0);
+		joy4_out <= joy4(joybits-1 downto 0);
 
 	end block;
 
